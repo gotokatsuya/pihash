@@ -15,25 +15,27 @@ func NewAverage() *Average {
 	}
 }
 
-func (a *Average) Hash(src image.Image) uint8 {
+func (a *Average) Hash(src image.Image) uint64 {
 	src = ResizeImage(src, a.Size, a.Size)
 	srcBounds := src.Bounds()
 	maxY := srcBounds.Max.Y
 	maxX := srcBounds.Max.X
-	pixels := make([]uint8, maxY*maxX)
-	var sumPixels uint8
+	var (
+		pixels    []uint64
+		sumPixels uint64
+	)
 	for i := 0; i < maxY; i++ {
 		for j := 0; j < maxX; j++ {
 			r, g, b, _ := src.At(j, i).RGBA()
-			pixel := uint8(math.Floor(float64((r + g + b) / 3)))
+			pixel := uint64(math.Floor(float64((r + g + b)) / float64(3)))
 			pixels = append(pixels, pixel)
 			sumPixels += pixel
 		}
 	}
-	average := uint8(math.Floor(float64(sumPixels / (uint8(maxY * maxX)))))
+	average := uint64(math.Floor(float64(sumPixels) / float64((maxY * maxX))))
 	var (
-		hash uint8
-		one  uint8 = 1
+		hash uint64
+		one  uint64 = 1
 	)
 	for _, pixel := range pixels {
 		if pixel > average {

@@ -2,6 +2,9 @@ package pihash
 
 import (
 	"image"
+	_ "image/jpeg"
+	_ "image/png"
+	"os"
 	"sort"
 
 	"github.com/disintegration/gift"
@@ -14,11 +17,22 @@ func ResizeImage(src image.Image, width, height int) image.Image {
 	return dst
 }
 
-type UInt8Slice []uint8
+func DecodeImageByPath(path string) (image.Image, error) {
+	file, err := os.Open(path)
+	defer file.Close()
+	if err != nil {
+		return nil, err
+	}
+	src, _, err := image.Decode(file)
+	if err != nil {
+		return nil, err
+	}
+	return src, nil
+}
 
-func (p UInt8Slice) Len() int           { return len(p) }
-func (p UInt8Slice) Less(i, j int) bool { return p[i] < p[j] }
-func (p UInt8Slice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+type UInt64Slice []uint64
 
-// Sort is a convenience method.
-func (p UInt8Slice) Sort() { sort.Sort(p) }
+func (p UInt64Slice) Len() int           { return len(p) }
+func (p UInt64Slice) Less(i, j int) bool { return p[i] < p[j] }
+func (p UInt64Slice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p UInt64Slice) Sort()              { sort.Sort(p) }

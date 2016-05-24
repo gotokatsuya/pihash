@@ -17,51 +17,50 @@ func NewPerceptual() *Perceptual {
 	}
 }
 
-func (p *Perceptual) Hash(src image.Image) uint8 {
+func (p *Perceptual) Hash(src image.Image) uint64 {
 	src = ResizeImage(src, p.Size, p.Size)
 	srcBounds := src.Bounds()
 	maxY := srcBounds.Max.Y
 	maxX := srcBounds.Max.X
 
 	var (
-		row  = make([]uint8, maxX)
-		rows = make([][]uint8, maxY*maxX)
+		row  = make([]uint64, maxX)
+		rows [][]uint64
 	)
 	for i := 0; i < maxY; i++ {
 		for j := 0; j < maxX; j++ {
 			r, g, b, _ := src.At(j, i).RGBA()
 			y, _, _ := color.RGBToYCbCr(uint8(r>>8), uint8(g>>8), uint8(b>>8))
-			row[j] = y
+			row[j] = uint64(y)
 		}
-		rows[i] = discreteCosineTransformation(row)
+		rows = append(rows, discreteCosineTransformation(row))
 	}
 
 	var (
-		matrix = make([][]uint8, maxY*maxX)
-		col    = make([]uint8, maxX)
+		matrix [][]uint64
+		col    = make([]uint64, maxY)
 	)
 	for j := 0; j < maxX; j++ {
 		for i := 0; i < maxY; i++ {
 			col[i] = rows[i][j]
 		}
-		matrix[j] = discreteCosineTransformation(col)
+		matrix = append(matrix, discreteCosineTransformation(col))
 	}
 
-	var pixels []uint8
+	var pixels []uint64
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
 			pixels = append(pixels, matrix[i][j])
 		}
 	}
 
-	medianValue := median(pixels)
-
+	median := getMedian(pixels)
 	var (
-		hash uint8
-		one  uint8 = 1
+		hash uint64
+		one  uint64 = 1
 	)
 	for _, pixel := range pixels {
-		if pixel > medianValue {
+		if pixel > median {
 			hash |= one
 		}
 		one = one << 1
@@ -69,29 +68,31 @@ func (p *Perceptual) Hash(src image.Image) uint8 {
 	return hash
 }
 
-func discreteCosineTransformation(pixels []uint8) []uint8 {
+func discreteCosineTransformation(pixels []uint64) []uint64 {
 	var (
 		size        = len(pixels)
-		transformed = make([]uint8, size)
+		transformed = make([]uint64, size)
 	)
 	for i := 0; i < size; i++ {
-		var sum uint8
+		var sum float64
 		for j := 0; j < size; j++ {
-			v := (float64(i) * math.Pi * (float64(j) + 0.5) / float64(size))
-			sum += pixels[j] * uint8(math.Cos(v))
+			x := (float64(i) * math.Pi * (float64(j) + 0.5) / float64(size))
+			sum += float64(pixels[j]) * math.Cos(x)
 		}
-		sum *= uint8(math.Sqrt(float64(2 / size)))
+		if sum != 0 {
+			sum *= math.Sqrt(float64(2) / float64(size))
+		}
 		if i == 0 {
-			sum *= 1 / uint8(math.Sqrt(float64(2)))
+			sum *= (float64(1) / math.Sqrt(float64(2)))
 		}
-		transformed[i] = sum
+		transformed[i] = uint64(sum)
 	}
 	return transformed
 }
 
-func median(pixels []uint8) (median uint8) {
-	sort.Sort(UInt8Slice(pixels))
-	middle := uint8(math.Floor(float64(len(pixels) / 2)))
+func getMedian(pixels []uint64) (median uint64) {
+	sort.Sort(UInt64Slice(pixels))
+	middle := uint64(math.Floor(float64(len(pixels)) / float64(2)))
 	if len(pixels)%2 == 0 {
 		median = pixels[middle]
 	} else {

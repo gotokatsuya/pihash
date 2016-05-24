@@ -5,5 +5,5 @@ import (
 )
 
 type HashAlgorithm interface {
-	Hash(image.Image) uint8
+	Hash(image.Image) uint64
 }
