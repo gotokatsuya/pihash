@@ -4,6 +4,7 @@ import (
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
+	"io"
 	"os"
 	"sort"
 
@@ -24,6 +25,14 @@ func DecodeImageByPath(path string) (image.Image, error) {
 		return nil, err
 	}
 	src, _, err := image.Decode(file)
+	if err != nil {
+		return nil, err
+	}
+	return src, nil
+}
+
+func DecodeImageByFile(reader io.Reader) (image.Image, error) {
+	src, _, err := image.Decode(reader)
 	if err != nil {
 		return nil, err
 	}
