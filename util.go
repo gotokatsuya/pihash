@@ -12,7 +12,7 @@ import (
 )
 
 func ResizeImage(src image.Image, width, height int) image.Image {
-	gi := gift.New(gift.Resize(width, height, gift.LanczosResampling))
+	gi := gift.New(gift.Resize(width, height, gift.LinearResampling))
 	dst := image.NewRGBA(gi.Bounds(src.Bounds()))
 	gi.Draw(dst, src)
 	return dst
