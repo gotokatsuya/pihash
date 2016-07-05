@@ -18,7 +18,7 @@ func NewPerceptual() *Perceptual {
 }
 
 func (p *Perceptual) Hash(src image.Image) uint64 {
-	src = ResizeImage(src, p.Size, p.Size)
+	src = GetResizedGrayscaledImage(src, p.Size, p.Size)
 	srcBounds := src.Bounds()
 	maxY := srcBounds.Max.Y
 	maxX := srcBounds.Max.X

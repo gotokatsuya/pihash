@@ -2,6 +2,7 @@ package pihash
 
 import (
 	"image"
+	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
 	"io"
@@ -11,8 +12,15 @@ import (
 	"github.com/disintegration/gift"
 )
 
-func ResizeImage(src image.Image, width, height int) image.Image {
+func GetResizedImage(src image.Image, width, height int) image.Image {
 	gi := gift.New(gift.Resize(width, height, gift.LinearResampling))
+	dst := image.NewRGBA(gi.Bounds(src.Bounds()))
+	gi.Draw(dst, src)
+	return dst
+}
+
+func GetResizedGrayscaledImage(src image.Image, width, height int) image.Image {
+	gi := gift.New(gift.Resize(width, height, gift.LinearResampling), gift.Grayscale())
 	dst := image.NewRGBA(gi.Bounds(src.Bounds()))
 	gi.Draw(dst, src)
 	return dst
@@ -31,8 +39,8 @@ func DecodeImageByPath(path string) (image.Image, error) {
 	return src, nil
 }
 
-func DecodeImageByFile(reader io.Reader) (image.Image, error) {
-	src, _, err := image.Decode(reader)
+func DecodeImageByFile(file io.Reader) (image.Image, error) {
+	src, _, err := image.Decode(file)
 	if err != nil {
 		return nil, err
 	}

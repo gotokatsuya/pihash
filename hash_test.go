@@ -1,7 +1,10 @@
 package pihash
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -97,6 +100,64 @@ func TestSimilarHash(t *testing.T) {
 			t.Fatal("Not similar.", target)
 		} else {
 			t.Log(distance, target)
+		}
+	}
+}
+
+func getImageData(url string) ([]byte, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return ioutil.ReadAll(resp.Body)
+}
+
+// TestSimilarHashByHumanFace ...
+func TestSimilarHashByHumanFace(t *testing.T) {
+	t.Skip("Add tests data, please.")
+
+	assert := assert.New(t)
+
+	tests := []struct {
+		name        string
+		algorithm   HashAlgorithm
+		url1        string
+		url2        string
+		similar     bool
+		maxDistance int
+	}{}
+
+	for _, tt := range tests {
+		target := fmt.Sprintf("%v", tt.name)
+		hash := NewHash()
+		hash.Algorithm = tt.algorithm
+
+		data, err := getImageData(tt.url1)
+		assert.NoError(err, target)
+		img1, err := DecodeImageByFile(bytes.NewBuffer(data))
+		assert.NoError(err, target)
+
+		data, err = getImageData(tt.url2)
+		assert.NoError(err, target)
+		img2, err := DecodeImageByFile(bytes.NewBuffer(data))
+		assert.NoError(err, target)
+
+		distance := hash.Compare(img1, img2)
+
+		switch tt.similar {
+		case true:
+			if tt.maxDistance < distance {
+				t.Fatal("Should be similar....", distance, target, tt.similar)
+			} else {
+				t.Log(distance, target)
+			}
+		case false:
+			if tt.maxDistance >= distance {
+				t.Fatal("Should not be similar...", distance, target, tt.similar, tt.url1, tt.url2)
+			} else {
+				t.Log(distance, target)
+			}
 		}
 	}
 }

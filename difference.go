@@ -16,7 +16,7 @@ func NewDifference() *Difference {
 }
 
 func (d *Difference) Hash(src image.Image) uint64 {
-	src = ResizeImage(src, d.Size+1, d.Size)
+	src = GetResizedGrayscaledImage(src, d.Size+1, d.Size)
 	srcBounds := src.Bounds()
 	maxY := srcBounds.Max.Y
 	maxX := srcBounds.Max.X

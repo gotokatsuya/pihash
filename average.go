@@ -16,7 +16,7 @@ func NewAverage() *Average {
 }
 
 func (a *Average) Hash(src image.Image) uint64 {
-	src = ResizeImage(src, a.Size, a.Size)
+	src = GetResizedGrayscaledImage(src, a.Size, a.Size)
 	srcBounds := src.Bounds()
 	maxY := srcBounds.Max.Y
 	maxX := srcBounds.Max.X
