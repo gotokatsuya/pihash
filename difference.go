@@ -1,9 +1,6 @@
 package pihash
 
-import (
-	"image"
-	"math"
-)
+import "image"
 
 type Difference struct {
 	Size int
@@ -25,11 +22,9 @@ func (d *Difference) Hash(src image.Image) uint64 {
 		one  uint64 = 1
 	)
 	for i := 0; i < maxY; i++ {
-		lr, lg, lb, _ := src.At(0, i).RGBA()
-		left := uint64(math.Floor(float64((lr + lg + lb)) / float64(3)))
+		left := wrapSumPixels(src.At(0, i).RGBA())
 		for j := 1; j < maxX; j++ {
-			rr, rg, rb, _ := src.At(j, i).RGBA()
-			right := uint64(math.Floor(float64((rr + rg + rb)) / float64(3)))
+			right := wrapSumPixels(src.At(j, i).RGBA())
 			if left > right {
 				hash |= one
 			}
