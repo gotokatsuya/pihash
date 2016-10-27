@@ -13,14 +13,14 @@ import (
 )
 
 func GetResizedImage(src image.Image, width, height int) image.Image {
-	gi := gift.New(gift.Resize(width, height, gift.LinearResampling))
+	gi := gift.New(gift.Resize(width, height, gift.LanczosResampling))
 	dst := image.NewRGBA(gi.Bounds(src.Bounds()))
 	gi.Draw(dst, src)
 	return dst
 }
 
 func GetResizedGrayscaledImage(src image.Image, width, height int) image.Image {
-	gi := gift.New(gift.Resize(width, height, gift.LinearResampling), gift.Grayscale())
+	gi := gift.New(gift.Resize(width, height, gift.LanczosResampling), gift.Grayscale())
 	dst := image.NewRGBA(gi.Bounds(src.Bounds()))
 	gi.Draw(dst, src)
 	return dst
